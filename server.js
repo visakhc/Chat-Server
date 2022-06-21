@@ -21,13 +21,24 @@ const io = socket(server);
 io.on('connection', (socket) => {
 
     console.log("New user connection: " + socket.id)
+
+    io.emit('connected', socket.id);
+
     const {error, user} = addUser({id: socket.id, user_id: "s"});
 
 
-    socket.on('sendMessage', (id, message, timeStamp) => {
-         io.emit('receivedMessage', {status: true, data: { id: id, message: message, timeStamp: timeStamp}});
+    socket.on('sendMessage', (id, message, time, imageUrl, timeStamp, mime) => {
+        // console.log("[SERVER]  message = " + message + ", mime = " + mime + ", image = " + imageUrl + ", time = " + time)
+        io.emit('receivedMessage', {
+            status: true,
+            data: {id: id, message: message, time: time, imageUrl: imageUrl, timeStamp: timeStamp, mime: mime}
+        });
     })
 
     io.emit('userCount', {status: true, data: getUserCount()});
 
+    socket.on('userTyping', (id, status) => {
+        console.log("[SERVER]  id " + id + "  typing = status: " + status)
+        io.emit('typing', id, status);
+    })
 })
